@@ -7,6 +7,57 @@ import time
 import os
 import data
 
+def zxing_decode(zxing_reader, filename):
+    start = time.time()
+    file_path = 'file:///' + filename.replace('\\', '/')
+    zxing_results = zxing_reader.decode(file_path)
+    elapsed_time = time.time() - start
+    if zxing_results != None:
+        print('ZXing: {}. Elapsed time: {}ms'.format(zxing_results.data.rstrip(), int(elapsed_time * 1000)))
+        return zxing_results
+    else:
+        print('ZXing failed to decode {}'.format(filename))
+
+    return None
+
+def zbar_decode(zbar_reader, filename):
+    start = time.time()
+    zbar_results = zbar.decode(Image.open(filename))
+    elapsed_time = time.time() - start
+    if len(zbar_results) > 0:
+        for zbar_result in zbar_results:
+            print('ZBar: {}. Elapsed time: {}ms'.format(zbar_result.data.decode("utf-8"), int(elapsed_time * 1000)))
+
+        return zbar_results
+    else:
+        print('ZBar failed to decode {}'.format(filename))
+
+    return None
+
+def dbr_decode(dbr_reader, filename):
+    try:
+        params = dbr_reader.GetRuntimeSettings()
+        params["BarcodeFormatIds"] = dbr_reader.BF_ALL
+        ret = dbr_reader.UpdataRuntimeSettings(params)
+
+        start = time.time()
+        dbr_results = dbr_reader.DecodeFile(filename)
+        elapsed_time = time.time() - start
+        textResults = dbr_results["TextResults"]
+        resultsLength = len(textResults)
+        if resultsLength > 0:
+            for textResult in textResults:
+                # print(textResult["BarcodeFormatString"])
+                print('Dynamsoft Barcode Reader: {}. Elapsed time: {}ms'.format(textResult["BarcodeText"], int(elapsed_time * 1000)))
+
+            return textResults
+        else:
+            print("DBR failed to decode {}".format(filename))
+    except Exception as err:
+        print("DBR failed to decode {}".format(filename))
+
+    return None
+
 def dataset(directory = None, zxing_reader = None, zbar_reader = None, dbr_reader = None):
     if directory != None:
         print(directory)
@@ -37,8 +88,8 @@ def dataset(directory = None, zxing_reader = None, zbar_reader = None, dbr_reade
 
             # ZBar
             if zbar_reader != None:
-                zbar_results = zbar_reader.decode(Image.open(file_path))
-                if len(zbar_results) > 0:
+                zbar_results = zbar_decode(zbar_reader, file_path)
+                if zbar_results != None:
                     for zbar_result in zbar_results:
                         zbar_text = zbar_result.data.decode("utf-8")
                         r1 = zbar_text
@@ -50,30 +101,19 @@ def dataset(directory = None, zxing_reader = None, zbar_reader = None, dbr_reade
 
             # DBR
             if dbr_reader != None:
-                try:
-                    start = time.time()
-                    dbr_results = dbr_reader.DecodeFile(file_path)
-                    elapsed_time = time.time() - start
-                    textResults = dbr_results["TextResults"]
-                    resultsLength = len(textResults)
-                    if resultsLength > 0:
-                        for textResult in textResults:
-                            r2 = textResult["BarcodeText"]
-                            if r2 == expected_result:
-                                dbr_count += 1
-                                break
-
-                    else:
-                        print("DBR failed to decode {}".format(filename))
-                except Exception as err:
+                textResults = dbr_decode(dbr_reader, file_path)
+                if textResults != None:
+                    for textResult in textResults:
+                        r2 = textResult["BarcodeText"]
+                        if r2 == expected_result:
+                            dbr_count += 1
+                            break
+                else:
                     print("DBR failed to decode {}".format(filename))
 
             # ZXing
             if zxing_reader != None:
-                image_uri = 'file:///' + file_path.replace('\\', '/')
-                start = time.time()
-                zxing_results = zxing_reader.decode(image_uri)
-                elapsed_time = time.time() - start
+                zxing_results = zxing_decode(zxing_reader, file_path)
                 if zxing_results != None:
                     r3 = zxing_results.data.rstrip()
                     if r3 == expected_result:
@@ -137,39 +177,13 @@ def main():
     # image = r'D:\python-zxing-zbar-dbr\dataset\8697431460361_1.jpg' #test
     if image != None:
         # ZXing
-        start = time.time()
-        file_path = 'file:///' + image.replace('\\', '/')
-        zxing_results = zxing_reader.decode(file_path)
-        elapsed_time = time.time() - start
-        if zxing_results != None:
-            print('ZXing: {}. Elapsed time: {}ms'.format(zxing_results.data.rstrip(), int(elapsed_time * 1000)))
-        else:
-            print('ZXing failed to decode {}'.format(image))
+        zxing_decode(zxing_reader, image)
 
         # ZBar
-        start = time.time()
-        zbar_results = zbar.decode(Image.open(image))
-        elapsed_time = time.time() - start
-        if len(zbar_results) > 0:
-            for zbar_result in zbar_results:
-                print('ZBar: {}. Elapsed time: {}ms'.format(zbar_result.data.decode("utf-8"), int(elapsed_time * 1000)))
-        else:
-            print('ZBar failed to decode {}'.format(image))
+        zbar_decode(zbar, image)
 
         # Dynamsoft Barcode Reader
-        try:
-            start = time.time()
-            dbr_results = dbr_reader.DecodeFile(image)
-            elapsed_time = time.time() - start
-            textResults = dbr_results["TextResults"]
-            resultsLength = len(textResults)
-            if resultsLength > 0:
-                for textResult in textResults:
-                    print('Dynamsoft Barcode Reader: {}. Elapsed time: {}ms'.format(textResult["BarcodeText"], int(elapsed_time * 1000)))
-            else:
-                print("DBR failed to decode {}".format(image))
-        except Exception as err:
-            print("DBR failed to decode {}".format(image))
+        dbr_decode(dbr_reader, image)
     
     if directory != None:
         dataset(directory, zxing_reader=zxing_reader, zbar_reader=zbar, dbr_reader=dbr_reader)
