@@ -29,7 +29,7 @@ def get_workbook(wb_name):
         ws.title = 'Recognition Rate'
         ws['A1'] = 'File Name'
         # Set column width
-        ws.column_dimensions[utils.get_column_letter(1)].width = 50
+        ws.column_dimensions[utils.get_column_letter(1)].width = 25
         ws['B1'] = 'Expected Results'
         ws.column_dimensions[utils.get_column_letter(2)].width = 20
         ws['C1'] = 'ZBar'

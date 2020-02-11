@@ -92,3 +92,39 @@ except Exception as err:
     print(err)
 ```
 
+### Python Excel
+
+Installation
+
+```
+pip install openpyxl
+```
+
+Usage
+
+```py
+from openpyxl import Workbook
+wb = Workbook()
+
+# grab the active worksheet
+ws = wb.active
+
+# Data can be assigned directly to cells
+ws['A1'] = 42
+
+# Rows can also be appended
+ws.append([1, 2, 3])
+
+# Python types will automatically be converted
+import datetime
+ws['A2'] = datetime.datetime.now()
+
+# Save the file
+wb.save("sample.xlsx")
+```
+
+https://openpyxl.readthedocs.io/en/stable/
+
+## Blog
+
+- [How to Use Python ZXing and Python ZBar on Windows 10](https://www.codepool.biz/python-zxing-zbar-barcode.html)
