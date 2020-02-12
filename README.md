@@ -125,6 +125,11 @@ wb.save("sample.xlsx")
 
 https://openpyxl.readthedocs.io/en/stable/
 
+## Benchmark
+
+![barcode sdk benchmark](https://www.codepool.biz/wp-content/uploads/2020/02/benchmark-barcode-sdk.png)
+
 ## Blog
 
 - [How to Use Python ZXing and Python ZBar on Windows 10](https://www.codepool.biz/python-zxing-zbar-barcode.html)
+- [How to Benchmark Barcode SDK Performance in Python](https://www.codepool.biz/benchmark-barcode-sdk-python.html)
