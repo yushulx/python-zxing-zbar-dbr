@@ -69,7 +69,7 @@ def dataset(directory = None, zxing_reader = None, zbar_reader = None, dbr_reade
             return
 
         # Create a .xlsx file
-        datafile = 'comparison.xlsx'
+        datafile = 'benchmark.xlsx'
         wb = data.get_workbook(datafile)
         index = 2
 
